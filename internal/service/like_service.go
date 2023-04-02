@@ -49,32 +49,33 @@ func (s *LikeService) SetPostLike(like models.Like) error {
 	return nil
 }
 
-func (s *LikeService) SetCommentLike(like models.Like) error {
+func (s *LikeService) SetCommentLike(like models.Like) (int, error) {
 	if err := s.repo.CheckCommentLike(like.UserID, like.CommentID); err == nil {
 		if err = s.repo.DeleteCommentLike(like.UserID, like.CommentID); err != nil {
 			log.Printf("service: %s", err)
-			return err
+			return 0, err
 		}
 	} else if errors.Is(err, sql.ErrNoRows) {
 		if err = s.repo.CheckCommentDislike(like.UserID, like.CommentID); err == nil {
 			if err = s.repo.DeleteCommentDislike(like.UserID, like.CommentID); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 			if err = s.repo.SetCommentLike(like); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 		} else if errors.Is(err, sql.ErrNoRows) {
 			if err = s.repo.SetCommentLike(like); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 		}
 	}
-	if err := s.repo.UpdateCommentVote(like.CommentID); err != nil {
+	postID, err := s.repo.UpdateCommentVote(like.CommentID)
+	if err != nil {
 		log.Printf("service: %s", err)
-		return err
+		return 0, err
 	}
-	return nil
+	return postID, nil
 }

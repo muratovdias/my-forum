@@ -28,12 +28,12 @@ type Comment interface {
 
 type Like interface {
 	SetPostLike(models.Like) error
-	SetCommentLike(models.Like) error
+	SetCommentLike(models.Like) (int, error)
 }
 
 type Dislike interface {
 	SetPostDislike(models.DisLike) error
-	SetCommentDislike(models.DisLike) error
+	SetCommentDislike(models.DisLike) (int, error)
 }
 
 type Service struct {

@@ -49,32 +49,33 @@ func (s *DislikeService) SetPostDislike(dislike models.DisLike) error {
 	return nil
 }
 
-func (s *DislikeService) SetCommentDislike(dislike models.DisLike) error {
+func (s *DislikeService) SetCommentDislike(dislike models.DisLike) (int, error) {
 	if err := s.repo.CheckCommentDislike(dislike.UserID, dislike.CommentID); err == nil {
 		if err = s.repo.DeleteCommentDislike(dislike.UserID, dislike.CommentID); err != nil {
 			log.Printf("service: %s", err)
-			return err
+			return 0, err
 		}
 	} else if errors.Is(err, sql.ErrNoRows) {
 		if err = s.repo.CheckCommentLike(dislike.UserID, dislike.CommentID); err == nil {
 			if err = s.repo.DeleteCommentLike(dislike.UserID, dislike.CommentID); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 			if err = s.repo.SetCommentDislike(dislike); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 		} else if errors.Is(err, sql.ErrNoRows) {
 			if err = s.repo.SetCommentDislike(dislike); err != nil {
 				log.Printf("service: %s", err)
-				return err
+				return 0, err
 			}
 		}
 	}
-	if err := s.repo.UpdateCommentVote(dislike.CommentID); err != nil {
+	postID, err := s.repo.UpdateCommentVote(dislike.CommentID)
+	if err != nil {
 		log.Printf("service: %s", err)
-		return err
+		return 0, err
 	}
-	return nil
+	return postID, nil
 }

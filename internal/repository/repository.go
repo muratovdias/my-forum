@@ -54,7 +54,7 @@ type LikeDislike interface {
 	CheckCommentLike(int, int) error
 	DeleteCommentDislike(int, int) error
 	DeleteCommentLike(int, int) error
-	UpdateCommentVote(int) error
+	UpdateCommentVote(int) (int, error)
 }
 
 type Repository struct {

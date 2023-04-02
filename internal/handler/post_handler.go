@@ -95,7 +95,7 @@ func (h *Handler) myFavourites(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) post(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(ctxUserKey).(models.User)
-	PostID = strings.TrimPrefix(r.URL.Path, "/post/")
+	PostID := strings.TrimPrefix(r.URL.Path, "/post/")
 	post, err := h.services.Post.GetPostByID(PostID)
 	var emptyPost models.Post
 	if err != nil || *post == emptyPost {
