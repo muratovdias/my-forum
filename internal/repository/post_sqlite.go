@@ -46,7 +46,7 @@ func (r *PostRepo) GetAllPost() (*[]models.Post, error) {
 }
 
 func (r *PostRepo) GetPostByCategory(category string) (*[]models.Post, error) {
-	rows, err := r.db.Query(`SELECT * FROM post WHERE category LIKE '%` + category + `%'` + `ORDER BY id DESC`)
+	rows, err := r.db.Query(`SELECT * FROM post WHERE category LIKE '%' || $1 || '%' ORDER BY id DESC`, category)
 	if err != nil {
 		log.Printf("by category: %s", err)
 		return nil, fmt.Errorf(path+"get all post: %w", err)
@@ -65,7 +65,7 @@ func (r *PostRepo) GetPostByCategory(category string) (*[]models.Post, error) {
 }
 
 func (r *PostRepo) MyPosts(id string) (*[]models.Post, error) {
-	rows, err := r.db.Query(`SELECT * FROM post WHERE author_id=` + id + ` ORDER BY id DESC`)
+	rows, err := r.db.Query(`SELECT * FROM post WHERE author_id=$1 ORDER BY id DESC`, id)
 	if err != nil {
 		return nil, fmt.Errorf(path+"get my post: %w", err)
 	}
@@ -112,7 +112,7 @@ func (r *PostRepo) MyFavourites(id int) (*[]models.Post, error) {
 }
 
 func (r *PostRepo) GetPostByID(id string) (*models.Post, error) {
-	rows, err := r.db.Query(`SELECT * FROM post WHERE id=` + id)
+	rows, err := r.db.Query(`SELECT * FROM post WHERE id=$1`, id)
 	if err != nil {
 		return nil, fmt.Errorf(path+"get post by id: %w", err)
 	}

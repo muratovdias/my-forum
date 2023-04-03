@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -20,8 +21,14 @@ func NewAuthRepo(db *sql.DB) *AuthRepo {
 }
 
 func (r *AuthRepo) CreateUser(user models.User) error {
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: create user: %s", err)
+		return fmt.Errorf(path+"create user: %w", err)
+	}
+	defer conn.Close()
 	query := "INSERT INTO user (email, username, password) VALUES ($1, $2, $3)"
-	_, err := r.db.Exec(query, user.Email, user.Username, user.Password)
+	_, err = r.db.Exec(query, user.Email, user.Username, user.Password)
 	if err != nil {
 		log.Printf("repo: create user: %s", err)
 		return fmt.Errorf(path+"create user: %w", err)
@@ -31,6 +38,12 @@ func (r *AuthRepo) CreateUser(user models.User) error {
 
 func (r *AuthRepo) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: get user by email: %s", err)
+		return user, fmt.Errorf(path+"get user by email: %w", err)
+	}
+	defer conn.Close()
 	query := `SELECT  username, password FROM user WHERE email=$1`
 	row := r.db.QueryRow(query, email)
 	if err := row.Scan(&user.Username, &user.Password); err != nil {
@@ -41,6 +54,12 @@ func (r *AuthRepo) GetUserByEmail(email string) (models.User, error) {
 
 func (r *AuthRepo) GetUserByUsername(username string) (models.User, error) {
 	var user models.User
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: get user by username: %s", err)
+		return user, fmt.Errorf(path+"get user by username: %w", err)
+	}
+	defer conn.Close()
 	query := `SELECT  username, password FROM user WHERE username=$1`
 	row := r.db.QueryRow(query, username)
 	if err := row.Scan(&user.Username, &user.Password); err != nil {
@@ -51,9 +70,15 @@ func (r *AuthRepo) GetUserByUsername(username string) (models.User, error) {
 
 func (r *AuthRepo) GetUserByToken(token string) (models.User, error) {
 	var user models.User
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: get user by token: %s", err)
+		return user, fmt.Errorf(path+"get user by token: %w", err)
+	}
+	defer conn.Close()
 	query := "SELECT * FROM user WHERE token=$1"
 	row := r.db.QueryRow(query, token)
-	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.Token, &user.TokenDuration)
+	err = row.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.Token, &user.TokenDuration)
 	if err != nil {
 		return models.User{}, fmt.Errorf(path+"get user by token %w", err)
 	}
@@ -61,8 +86,14 @@ func (r *AuthRepo) GetUserByToken(token string) (models.User, error) {
 }
 
 func (r *AuthRepo) SaveToken(username, token string, duration time.Time) error {
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: get user by token: %s", err)
+		return fmt.Errorf(path+"get user by token: %w", err)
+	}
+	defer conn.Close()
 	query := `UPDATE user SET token=$1, token_duration=$2 WHERE username=$3`
-	_, err := r.db.Exec(query, token, duration, username)
+	_, err = r.db.Exec(query, token, duration, username)
 	if err != nil {
 		return fmt.Errorf("ERROR: /repository save token: %w", err)
 	}
@@ -70,8 +101,14 @@ func (r *AuthRepo) SaveToken(username, token string, duration time.Time) error {
 }
 
 func (r *AuthRepo) DeleteToken(token string) error {
+	conn, err := r.db.Conn(context.Background())
+	if err != nil {
+		log.Printf("repo: get user by token: %s", err)
+		return fmt.Errorf(path+"get user by token: %w", err)
+	}
+	defer conn.Close()
 	query := `UPDATE user SET token=NULL, token_duration=NULL WHERE token=$1`
-	_, err := r.db.Exec(query, token)
+	_, err = r.db.Exec(query, token)
 	if err != nil {
 		return err
 	}
